@@ -1,0 +1,65 @@
+% Volatile solids in the input biomass
+
+VSlm = 0.04; % cows manure;
+VScm = 0.049; % pigs manure;
+VSpm = 0.038; % poultry manure;
+VSam = 0.049; % sheeps manure;
+VSps = 0.054; % milk whey;
+VSksk = 0.272; % corn silage;
+VSgsk = 0.225; % grass silage;
+VSpp = 0.601; % paper dust;
+VSop = 0.816; % office paper;
+VStp = 0.896; % toilet paper;
+VSip = 0.79; % wrapping paper;
+VSkar = 0.788; % cardboard;
+VSmak = 0.657; % waste paper;
+VSdun = 0.131; % sludge;
+
+% Specific biogas yield, liter gSOV-1
+
+qlm = 360.6; % from cows manure;
+qcm = 502.4; % from pigs manure;
+qpm = 495.7; % from poultry manure;
+qam = 356.2; % from sheeps manure;
+qksk = 564.5; % from corn silage;
+qgsk = 543; % from grass silage;
+qpp = 345; % from paper dust;
+qtp = 727; % from toilet paper;
+qip = 715; % from wrapping paper;
+qkar = 735; % from cartdboard;
+qmak = 250.5; % from waste paper;
+qdun = 313.7; % from sludge;
+
+% Methane concentration in biogas, %
+
+CH4lm = 0.55; % cows manure;
+CH4cm = 0.64; % pigs manure;
+CH4pm = 0.62; % poultry manure;
+CH4am = 0.61; % sheeps manure;
+CH4ksk = 0.57; % corn silage;
+CH4gsk = 0.58; % grass silage;
+CH4pp = 0.59; % paper dust;
+CH4op = 0.54; % office paper;
+CH4tp = 0.53; % toilet paper;
+CH4ip = 0.52; % wrapping paper;
+CH4kar = 0.53; % cardbord;
+CH4mak = 0.35; % waste paper;
+
+% biogas yield, m3 t-1 year;
+Qb.lm = qlm*SOVlm;
+Qb.cm = qcm*SOVcm;
+Qb.pp = qpp*SOVpp;
+Qb.ksk = qksk*SOVksk;
+Qb.op = qop*SOVop;
+
+% Manure yield, t year
+Msv = 2.75;
+Mnob.cuk = 0.4;
+Msl.gov4000 = 11.7;
+Msl.gov5000 = 12.6;
+Msl.gov7000 = 17.3;
+Mtel = 4.8;
+Mait = 0.6;
+Md.vist = 2.4;
+Mnob.cal = 0.8;
+
