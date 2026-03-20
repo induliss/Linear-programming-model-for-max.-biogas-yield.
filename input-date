@@ -24,6 +24,7 @@ qam = 356.2; % from sheeps manure;
 qksk = 564.5; % from corn silage;
 qgsk = 543; % from grass silage;
 qpp = 345; % from paper dust;
+qop = 941; % from office paper;
 qtp = 727; % from toilet paper;
 qip = 715; % from wrapping paper;
 qkar = 735; % from cartdboard;
@@ -46,11 +47,10 @@ CH4kar = 0.53; % cardbord;
 CH4mak = 0.35; % waste paper;
 
 % biogas yield, m3 t-1 year;
-Qb.lm = qlm*SOVlm;
-Qb.cm = qcm*SOVcm;
-Qb.pp = qpp*SOVpp;
-Qb.ksk = qksk*SOVksk;
-Qb.op = qop*SOVop;
+Qb.lm = qlm*VSlm;
+Qb.cm = qcm*VSpp;
+Qb.ksk = qksk*VSksk;
+Qb.op = qop*VSop;
 
 % Manure yield, t year
 Msv = 2.75;
