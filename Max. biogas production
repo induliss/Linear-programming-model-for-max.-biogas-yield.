@@ -1,0 +1,34 @@
+% =====================================================================
+% Biogas plant optimization
+% Objective function: maximize biogas yield, t dnn-1
+% Input value: bioreactor volume Vbioreactor [m3] and parameters of the introduced biomass - specific biogas yield [l gVS-1], volatile solids (VS), methane content in biogas CH4(%).
+% =====================================================================
+prob = optimproblem('ObjectiveSense','max');
+x = optimvar('x',2,1,'UpperBound',Inf);
+Vbio = 20; % bioreactor volume, m3;
+HRT = 20; % hydraulic retention time, dn;
+OLR   = 3.0;    % permissible organic load, kgVS*(m3·d)-1;
+VS_max = OLR * Vbio;  % max VS amount per day, kgVS*d-1;
+QzdCH4 = 8.83; % methane lower calorific value, kWh m-3;
+nel = 0.4; % electrical efficiency of a cogeneration plant;
+Wkog = 250; % cogeneration plant capacity, kW;
+a1 = (qlm/1000)*CH4lm*QzdCH4*nel;
+a2 = (qksk/1000)*CH4ksk*QzdCH4*nel;
+f1 = VSlm*qlm; % the parameters of the first input substance, specifically, cattle manure
+f2 = VSksk*qksk; % parameters of the second input substance, specifically, paper waste
+VS1 = 0.4-VSlm;
+VS2 = 0.4-VSksk;
+k = -0.5:0.05:-0.1;
+for i=1:length(k)
+prob.Objective = k(i) * f1 * x(1) + f2 * x(2);
+end
+prob.Constraints.cons1 = a1*x(1) + a2*x(2) <= Wkog;
+prob.Constraints.cons2 = x(1) + x(2) <= Vbio / HRT;
+prob.Constraints.cons3 = x(1) >= 1.5 * x(2);
+prob.Constraints.cons_VS = VSlm*x(1) + VSksk*x(2) <= VS_max;
+show(prob);
+[sol, fval, exitflag] = solve(prob);
+fprintf('Manure x(1):      %.4f m3/d\n', sol.x(1));
+fprintf('Pater waste x(2): %.4f m3/d\n', sol.x(2));
+fprintf('Max biogas:      %.4f m3/d\n', fval);
+
