@@ -1,28 +1,69 @@
 % =====================================================================
 % Biogas plant optimization
 % Objective function: maximize biogas yield, t dnn-1
-% Input value: bioreactor volume Vbioreactor [m3] and parameters of the introduced biomass - specific biogas yield [l gVS-1], volatile solids (VS), methane content in biogas CH4(%).
+% Input value: bioreactor volume Vbioreactor [m3], hydraulic retention time [d] and parameters of the introduced biomass - specific biogas yield [l gVS-1], volatile solids (VS) [kgVS/m3].
 % =====================================================================
-prob = optimproblem('ObjectiveSense','max');
-x = optimvar('x',2,1,'UpperBound',Inf);
-Vbio = 20; % bioreactor volume, m3;
-HRT = 20; % hydraulic retention time, dn;
-OLR   = 3.0;    % permissible organic load, kgVS*(m3·d)-1;
-VS_max = OLR * Vbio;  % max VS amount per day, kgVS*d-1;
-f1 = VSlm*qlm; % the parameters of the first input substance, specifically, cattle manure
-f2 = VSksk*qksk; % parameters of the second input substance, specifically, paper waste
-VS1 = 0.4-VSlm;
-VS2 = 0.4-VSksk;
-k = -0.5:0.05:-0.1;
-for i=1:length(k)
-prob.Objective = k(i) * f1 * x(1) + f2 * x(2);
-end
-prob.Constraints.cons1 = x(1) + x(2) <= Vbio / HRT;
-prob.Constraints.cons2 = x(1) >= 1.5 * x(2);
-prob.Constraints.cons_VS = VSlm*x(1) + VSksk*x(2) <= VS_max;
-show(prob);
-[sol, fval, exitflag] = solve(prob);
-fprintf('Manure x(1):      %.4f m3/d\n', sol.x(1));
-fprintf('Pater waste x(2): %.4f m3/d\n', sol.x(2));
-fprintf('Max biogas:      %.4f m3/d\n', fval);
 
+Vbio = 250;   % bioreactor volume, m3
+HRT  = 20;     % hydraulic retention time, day
+OLR  = 8;    % permissible organic load, kgVS·(m3·d)-1
+
+VS_max = OLR * Vbio;          % max VS amount per day, kgVS·d-1
+Q_day  = Vbio / HRT;          % permissible amount of biomass input, m3·d-1
+
+% Parameters of biomass
+f1 = VSlm * qlm;
+f2 = VSpp * qpp;
+
+% --- Available input material - proportional to Vbio and OLR ---
+% Let's assume that x(1) makes up 65% and x(2) mass 35% of the daily flow.
+share_lm   = 0.65;
+share_pp   = 0.35;
+supply_lm  = share_lm * Q_day;   % max x(1), m3·d-1
+supply_pp  = share_pp * Q_day;   % max x(2), m3·d-1
+
+fprintf('--- Input parameters ---\n');
+fprintf('Vbio       = %.4f m3\n', Vbio);
+fprintf('Q_day      = %.6f m3·d-1\n', Q_day);
+fprintf('supply_lm  = %.6f m3·d-1\n', supply_lm);
+fprintf('supply_pp  = %.6f m3·d-1\n\n', supply_pp);
+
+opts = optimoptions('linprog', 'Display', 'none');
+
+ratios = 1 : 0.1 : 5.0;
+res = nan(length(ratios), 4);  % [ratio, x1, x2, fval]
+
+for i = 1:length(ratios)
+    r = ratios(i);
+    prob = optimproblem('ObjectiveSense', 'max');
+    x = optimvar('x', 2, 1, 'LowerBound', 0);
+
+    prob.Objective = f1*x(1) + f2*x(2);
+    prob.Constraints.cons1   = x(1) + x(2) <= Q_day;
+    prob.Constraints.cons_VS = VSlm*x(1) + VSpp*x(2) <= VS_max;
+    prob.Constraints.cons_lm = x(1) <= supply_lm;
+    prob.Constraints.cons_pp = x(2) <= supply_pp;
+    prob.Constraints.cons_r  = x(1) == r * x(2);
+
+    [sol, fval, exitflag] = solve(prob, 'Options', opts);
+    if exitflag > 0
+        res(i,:) = [r, sol.x(1), sol.x(2), fval];
+    end
+end
+
+valid = res(~isnan(res(:,4)), :);
+[best_loop, idx] = max(valid(:,4));
+
+fprintf('Best ratio X1:X2 = %.1f:1\n', valid(idx,1));
+fprintf('X1 = %.3f m3·d-1\n', valid(idx,2));
+fprintf('X2 = %.3f m3·d-1\n', valid(idx,3));
+fprintf('Max biogas = %.3f m3·d-1\n\n', best_loop);
+
+% Schedule
+figure;
+plot(valid(:,1), valid(:,4), 'b-o', 'LineWidth', 1.5, 'MarkerSize', 5);
+xlabel('Ratio X1:X2');
+ylabel('Biogas (m^3·d^-^1)');
+title('Biogas yield depending on the X1:X2 ratio');
+grid on;
+xline(valid(idx,1), 'r--', sprintf('Optimal %.1f:1', valid(idx,1)));
