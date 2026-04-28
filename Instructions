@@ -1,0 +1,3 @@
+Instructions
+
+First, you need to run the `input-date` file. Then you can run the main `Max. biogas production` code, which is based on the linear programming method. If we want to change the type of input material, then the corresponding parameter is replaced by the corresponding indexed parameter, for example, the code contains the specific biogas yield from paper waste - qpw, and if we want to change it to silage corn, then this parameter (and also the others indexed with `pw`) is replaced by qcs and the other `pw`s` are replaced by `cs`
